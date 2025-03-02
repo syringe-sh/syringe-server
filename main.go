@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"github.com/nixpig/syringe.sh/internal/cli"
+)
 
 func main() {
-	fmt.Println("Hi, there!")
+	if err := cli.Cmd().Execute(); err != nil {
+		// log.Fatal(err)
+	}
 }
