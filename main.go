@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/charmbracelet/log"
-	"github.com/nixpig/syringe.sh/internal/cli"
+	"github.com/nixpig/syringe.sh/cmd"
 	"github.com/spf13/viper"
 )
 
@@ -17,7 +17,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := cli.New(v).ExecuteContext(context.Background()); err != nil {
+	if err := cmd.New(v).ExecuteContext(context.Background()); err != nil {
 		log.Error("execute root command", "err", err)
 
 	}
@@ -49,8 +49,6 @@ func initialiseConfig(v *viper.Viper) error {
 		return fmt.Errorf("open config file (%s): %w", configPath, err)
 	}
 	configFile.Close()
-
-	v.SetDefault("identity", "nixpig99")
 
 	v.SetConfigFile(configFile.Name())
 	v.SetConfigType("env")

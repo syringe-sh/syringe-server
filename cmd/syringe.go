@@ -1,9 +1,10 @@
-package cli
+package cmd
 
 import (
 	"fmt"
 
-	"github.com/nixpig/syringe.sh/internal/cmd"
+	"github.com/charmbracelet/log"
+	"github.com/nixpig/syringe.sh/internal/syringe"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -16,15 +17,35 @@ func New(v *viper.Viper) *cobra.Command {
 		Version: "",
 		PersistentPreRunE: func(c *cobra.Command, args []string) error {
 			applyFlags(c, v)
-			return nil
-		},
 
-		RunE: func(c *cobra.Command, args []string) error {
+			identity, _ := c.Flags().GetString("identity")
+			log.Debug("", "identity", identity)
+
+			store, _ := c.Flags().GetString("store")
+			log.Debug("", "store", store)
+
+			// TODO: get identity and set on context??
+
+			// TODO: make database connection and set on ctx
+
 			return nil
 		},
 	}
 
-	rootCmd.PersistentFlags().StringP("identity", "i", "", "Path to SSH key (optional)")
+	rootCmd.PersistentFlags().StringP(
+		"identity",
+		"i",
+		"",
+		fmt.Sprintf("Path to SSH key (default: %s)", v.GetString("identity")),
+	)
+
+	rootCmd.PersistentFlags().StringP(
+		"store",
+		"s",
+		"",
+		fmt.Sprintf("Store as name, path or URL (default: %s)", v.GetString("store")),
+	)
+
 	bindFlags(rootCmd, v)
 
 	rootCmd.AddCommand(
@@ -43,7 +64,7 @@ var setCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(2),
 	Example: "  syringe set username nixpig",
 	RunE: func(c *cobra.Command, args []string) error {
-		return cmd.Set(args[0], args[1], c.OutOrStdout())
+		return syringe.Set(c.Context(), c.OutOrStdout(), args[0], args[1])
 	},
 }
 
@@ -53,13 +74,7 @@ var getCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	Example: "  syringe get username",
 	RunE: func(c *cobra.Command, args []string) error {
-		// fmt.Println("here: ", c.Context().Value("qux"))
-		v, e := c.Flags().GetString("identity")
-		if e != nil {
-			fmt.Println("e: ", e)
-		}
-		fmt.Println("here: ", v)
-		return cmd.Get(args[0], c.OutOrStdout())
+		return syringe.Get(c.Context(), c.OutOrStdout(), args[0])
 	},
 }
 
@@ -69,7 +84,7 @@ var deleteCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	Example: "  syringe delete username",
 	RunE: func(c *cobra.Command, args []string) error {
-		return cmd.Delete(args[0])
+		return syringe.Delete(c.Context(), c.OutOrStdout(), args[0])
 	},
 }
 
@@ -79,7 +94,7 @@ var listCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(0),
 	Example: "  syringe list",
 	RunE: func(c *cobra.Command, args []string) error {
-		return cmd.List(c.OutOrStdout())
+		return syringe.List(c.Context(), c.OutOrStdout())
 	},
 }
 
