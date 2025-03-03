@@ -50,6 +50,8 @@ func initialiseConfig(v *viper.Viper) error {
 	}
 	configFile.Close()
 
+	v.SetDefault("identity", "nixpig99")
+
 	v.SetConfigFile(configFile.Name())
 	v.SetConfigType("env")
 	if err := v.ReadInConfig(); err != nil {

@@ -16,13 +16,6 @@ func New(v *viper.Viper) *cobra.Command {
 		Version: "",
 		PersistentPreRunE: func(c *cobra.Command, args []string) error {
 			applyFlags(c, v)
-
-			vid := v.GetString("identity")
-			fmt.Println("vid: ", vid)
-
-			cid, _ := c.Flags().GetString("identity")
-			fmt.Println("cid: ", cid)
-
 			return nil
 		},
 
@@ -32,10 +25,7 @@ func New(v *viper.Viper) *cobra.Command {
 	}
 
 	rootCmd.PersistentFlags().StringP("identity", "i", "", "Path to SSH key (optional)")
-	if err := bindFlags(rootCmd, v); err != nil {
-
-		fmt.Println("ERROR: ", err)
-	}
+	bindFlags(rootCmd, v)
 
 	rootCmd.AddCommand(
 		setCmd,
@@ -64,6 +54,11 @@ var getCmd = &cobra.Command{
 	Example: "  syringe get username",
 	RunE: func(c *cobra.Command, args []string) error {
 		// fmt.Println("here: ", c.Context().Value("qux"))
+		v, e := c.Flags().GetString("identity")
+		if e != nil {
+			fmt.Println("e: ", e)
+		}
+		fmt.Println("here: ", v)
 		return cmd.Get(args[0], c.OutOrStdout())
 	},
 }
@@ -88,18 +83,14 @@ var listCmd = &cobra.Command{
 	},
 }
 
-func bindFlags(c *cobra.Command, v *viper.Viper) error {
-	if err := v.BindPFlag("identity", c.PersistentFlags().Lookup("identity")); err != nil {
-		return fmt.Errorf("bind flags: %w", err)
-	}
-
-	return nil
+func bindFlags(c *cobra.Command, v *viper.Viper) {
+	c.PersistentFlags().VisitAll(func(f *pflag.Flag) {
+		v.BindPFlag(f.Name, f)
+	})
 }
 
 func applyFlags(c *cobra.Command, v *viper.Viper) {
-	fmt.Println("visiting all...")
 	c.Flags().VisitAll(func(f *pflag.Flag) {
-		fmt.Println("name: ", f.Name)
 		if v.IsSet(f.Name) {
 			c.Flags().Set(f.Name, v.GetString(f.Name))
 		}
