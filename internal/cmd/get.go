@@ -1,7 +1,11 @@
 package cmd
 
-import "context"
+import (
+	"io"
+)
 
-func Get(ctx context.Context, key string) ([]byte, error) {
-	return []byte{}, nil
+func Get(key string, out io.Writer) error {
+	out.Write([]byte{})
+
+	return nil
 }

@@ -1,7 +1,11 @@
 package cmd
 
-import "context"
+import (
+	"io"
+)
 
-func List(ctx context.Context) (map[string][]byte, error) {
-	return map[string][]byte{}, nil
+func List(w io.Writer) error {
+	w.Write([]byte{})
+
+	return nil
 }

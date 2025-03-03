@@ -1,7 +1,12 @@
 package cmd
 
-import "context"
+import (
+	"fmt"
+	"io"
+)
 
-func Set(ctx context.Context, key string, value []byte) error {
+func Set(key string, value string, out io.Writer) error {
+	out.Write([]byte(fmt.Sprintf("%s %s", key, value)))
+
 	return nil
 }
